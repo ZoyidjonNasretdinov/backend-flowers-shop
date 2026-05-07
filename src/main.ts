@@ -36,9 +36,14 @@ Gullar va sovg'alar marketplace API.
   });
 
   app.enableCors({
-    origin: true, // Allow any origin, including Vercel, Railway, and localhost
+    origin: (origin, callback) => {
+      // Har qanday originni qabul qilish (Vercel, Railway, localhost va h.k.)
+      // Bu credentials: true bilan ishlashi uchun origin: true kabi ishlaydi
+      callback(null, true);
+    },
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
+    allowedHeaders: 'Content-Type, Accept, Authorization, X-Requested-With',
   });
   await app.listen(5001);
   console.log('🚀 Flowers: http://localhost:5001/api/docs');
