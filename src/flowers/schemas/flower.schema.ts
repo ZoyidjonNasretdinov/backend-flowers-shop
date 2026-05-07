@@ -22,6 +22,14 @@ export class Flower extends Document {
   @Prop({ required: true, min: 0 })
   stock: number;
 
+  @ApiProperty({ example: 12000, description: 'Chegirmali narxi', required: false })
+  @Prop({ min: 0 })
+  discountPrice: number;
+
+  @ApiProperty({ example: 20, description: 'Chegirma foizi', required: false })
+  @Prop({ min: 0, max: 100 })
+  discountPercent: number;
+
   @ApiProperty({ example: ['https://example.com/flower.jpg'], description: 'Rasmlar ro\'yxati' })
   @Prop([String])
   images: string[];

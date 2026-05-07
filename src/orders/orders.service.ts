@@ -24,8 +24,14 @@ export class OrdersService {
       if (flower.stock < item.quantity) {
         throw new BadRequestException(`Zaxira yetarli emas: ${flower.name}`);
       }
-      item.price = flower.price; // Joriy narxni saqlaymiz
-      totalAmount += flower.price * item.quantity;
+      
+      // Chegirma bo'lsa chegirmali narxni, bo'lmasa asl narxni ishlatamiz
+      const currentPrice = flower.discountPrice && flower.discountPrice < flower.price 
+        ? flower.discountPrice 
+        : flower.price;
+
+      item.price = currentPrice;
+      totalAmount += currentPrice * item.quantity;
     }
 
     // 2. Buyurtmani yaratish
