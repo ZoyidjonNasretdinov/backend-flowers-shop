@@ -93,7 +93,7 @@ Gullar va sovg'alar marketplace API.
   });
 
   const port = process.env.PORT || 5001;
-  await app.listen(port);
-  console.log(`🚀 Flowers: http://localhost:${port}/api/docs`);
+  await app.listen(port, '0.0.0.0');
+  console.log(`🚀 Flowers: http://0.0.0.0:${port}/api/docs`);
 }
 bootstrap();
