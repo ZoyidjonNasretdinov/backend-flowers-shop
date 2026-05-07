@@ -18,7 +18,19 @@ export class FlowersService {
   }
 
   async findAll(query: any): Promise<any> {
-    const { search, category, minPrice, maxPrice, limit = 10, page = 1 } = query;
+    const { 
+      search, 
+      category, 
+      minPrice, 
+      maxPrice, 
+      occasion, 
+      color, 
+      recipient,
+      rating, 
+      inStock,
+      limit = 10, 
+      page = 1 
+    } = query;
     
     const filters: any = { isActive: true };
 
@@ -28,6 +40,30 @@ export class FlowersService {
 
     if (category) {
       filters.category = category;
+    }
+
+    if (occasion) {
+      filters.occasion = occasion;
+    }
+
+    if (color) {
+      const colors = Array.isArray(color) ? color : [color];
+      filters.color = { $in: colors };
+    }
+
+    if (recipient) {
+      const recipients = Array.isArray(recipient) ? recipient : [recipient];
+      filters.recipient = { $in: recipients };
+    }
+
+    if (inStock === 'true') {
+      filters.stock = { $gt: 0 };
+    } else if (inStock === 'false') {
+      filters.stock = 0;
+    }
+
+    if (rating) {
+      filters.rating = { $gte: Number(rating) };
     }
 
     if (minPrice || maxPrice) {

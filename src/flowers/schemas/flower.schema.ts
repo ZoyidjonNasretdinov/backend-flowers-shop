@@ -30,6 +30,22 @@ export class Flower extends Document {
   @Prop({ min: 0, max: 100 })
   discountPercent: number;
 
+  @ApiProperty({ example: 'Weddings', description: 'Tadbir turi (Occasion)', required: false })
+  @Prop()
+  occasion: string;
+
+  @ApiProperty({ example: ['Red', 'Pink'], description: 'Gullar ranglari', required: false })
+  @Prop([String])
+  color: string[];
+
+  @ApiProperty({ example: ['For Her', 'Corporate Gifts'], description: 'Kim uchun (Recipient)', required: false })
+  @Prop([String])
+  recipient: string[];
+
+  @ApiProperty({ example: 4.5, description: 'Reyting (1-5)', required: false })
+  @Prop({ min: 0, max: 5, default: 0 })
+  rating: number;
+
   @ApiProperty({ example: ['https://example.com/flower.jpg'], description: 'Rasmlar ro\'yxati' })
   @Prop([String])
   images: string[];
