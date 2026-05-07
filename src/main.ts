@@ -35,7 +35,11 @@ Gullar va sovg'alar marketplace API.
     swaggerOptions: { persistAuthorization: true },
   });
 
-  app.enableCors();
+  app.enableCors({
+    origin: true, // Allow any origin, including Vercel, Railway, and localhost
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true,
+  });
   await app.listen(5001);
   console.log('🚀 Flowers: http://localhost:5001/api/docs');
 }
