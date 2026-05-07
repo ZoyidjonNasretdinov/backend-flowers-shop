@@ -1,10 +1,58 @@
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // CORS sozlamalari
+  app.enableCors({
+    origin: (origin, callback) => {
+      const allowedOrigins = [
+        /^http:\/\/localhost(:\d+)?$/,
+        /^https:\/\/.*\.vercel\.app$/,
+        /^https:\/\/.*\.railway\.app$/,
+      ];
+      if (!origin || allowedOrigins.some((regex) => regex.test(origin))) {
+        callback(null, true);
+      } else {
+        callback(null, true); // Test uchun barchasiga ruxsat beramiz
+      }
+    },
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true,
+    allowedHeaders: [
+      'Content-Type',
+      'Accept',
+      'Authorization',
+      'X-Requested-With',
+      'X-HTTP-Method-Override',
+      'x-auth-token',
+    ],
+    exposedHeaders: ['Set-Cookie', 'x-auth-token'],
+    optionsSuccessStatus: 204,
+  });
+
+  // So'rovlarni kuzatish (Logging)
+  app.use((req, res, next) => {
+    if (req.method !== 'OPTIONS') {
+      console.log(
+        `[Request] Method: ${req.method}, Path: ${req.path}, Body: ${JSON.stringify(req.body)}`,
+      );
+    }
+    next();
+  });
+
+  // Global Validation Pipe
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+    }),
+  );
+
+  // Swagger hujjatlari
   const config = new DocumentBuilder()
     .setTitle('🌻 Flowers API')
     .setDescription(
@@ -26,7 +74,16 @@ Gullar va sovg'alar marketplace API.
       `,
     )
     .setVersion('1.0')
-    .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT', name: 'Authorization', in: 'header' }, 'access-token')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'Authorization',
+        in: 'header',
+      },
+      'access-token',
+    )
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
@@ -35,17 +92,8 @@ Gullar va sovg'alar marketplace API.
     swaggerOptions: { persistAuthorization: true },
   });
 
-  app.enableCors({
-    origin: (origin, callback) => {
-      // Har qanday originni qabul qilish (Vercel, Railway, localhost va h.k.)
-      // Bu credentials: true bilan ishlashi uchun origin: true kabi ishlaydi
-      callback(null, true);
-    },
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    credentials: true,
-    allowedHeaders: 'Content-Type, Accept, Authorization, X-Requested-With',
-  });
-  await app.listen(5001);
-  console.log('🚀 Flowers: http://localhost:5001/api/docs');
+  const port = process.env.PORT || 5001;
+  await app.listen(port);
+  console.log(`🚀 Flowers: http://localhost:${port}/api/docs`);
 }
 bootstrap();
