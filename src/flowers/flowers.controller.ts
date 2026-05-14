@@ -33,6 +33,12 @@ export class FlowersController {
     return this.flowersService.create(createFlowerDto, req.user.userId);
   }
 
+  @Get('landing')
+  @ApiOperation({ summary: 'Landing page uchun mahsulotlarni olish (Featured, New Arrivals, Random)' })
+  getLandingPage() {
+    return this.flowersService.getLandingPage();
+  }
+
   @Get()
   @ApiOperation({ summary: 'Barcha gullarni olish (Filtrlar bilan)' })
   @ApiQuery({ name: 'search', required: false, description: 'Nomi bo\'yicha qidirish' })
@@ -41,7 +47,13 @@ export class FlowersController {
   @ApiQuery({ name: 'color', required: false, isArray: true, description: 'Gullar ranglari' })
   @ApiQuery({ name: 'recipient', required: false, isArray: true, description: 'Kim uchun (masalan: For Her, For Kids)' })
   @ApiQuery({ name: 'inStock', required: false, type: Boolean, description: 'Zaxirada borligi (true/false)' })
-  @ApiQuery({ name: 'rating', required: false, type: Number, description: 'Minimal reyting' })
+  @ApiQuery({ name: 'isFeatured', required: false, type: Boolean, description: 'Asosiy sahifadagi mahsulotlar' })
+  @ApiQuery({ name: 'isNewArrival', required: false, type: Boolean, description: 'Yangi kelgan mahsulotlar' })
+  @ApiQuery({ name: 'isDealOfTheDay', required: false, type: Boolean, description: 'Kun mahsulotlari' })
+  @ApiQuery({ name: 'rating', required: false, type: Number, description: 'Minimal reyting (1-5)' })
+  @ApiQuery({ name: 'sortBy', required: false, enum: ['newest', 'oldest', 'price_low', 'price_high', 'rating'], description: 'Saralash tartibi' })
+  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Sahifadagi elementlar soni' })
+  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Sahifa raqami' })
   @ApiQuery({ name: 'minPrice', required: false, type: Number })
   @ApiQuery({ name: 'maxPrice', required: false, type: Number })
   @ApiResponse({ status: 200 })
@@ -59,8 +71,8 @@ export class FlowersController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Gulni ID orqali olish' })
-  @ApiResponse({ status: 200, type: Flower })
+  @ApiOperation({ summary: 'Gulni ID orqali olish (Batafsil ma\'lumot va o\'xshash mahsulotlar bilan)' })
+  @ApiResponse({ status: 200, description: 'Gul ma\'lumotlari va o\'xshash mahsulotlar' })
   findOne(@Param('id') id: string) {
     return this.flowersService.findOne(id);
   }

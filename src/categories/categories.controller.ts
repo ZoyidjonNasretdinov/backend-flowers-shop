@@ -11,6 +11,10 @@ import {
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { CategoriesService } from './categories.service';
 import { Category } from './schemas/category.schema';
+import { AuthGuard } from '@nestjs/passport';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { Roles } from '../common/decorators/roles.decorator';
+import { Role } from '../users/schemas/user.schema';
 
 @ApiTags('Categories')
 @Controller('categories')
@@ -18,7 +22,10 @@ export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Yangi kategoriya yaratish' })
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Yangi kategoriya yaratish (Faqat Admin)' })
   @ApiResponse({ status: 201, type: Category })
   create(@Body() createCategoryDto: { name: string; description?: string }) {
     return this.categoriesService.create(createCategoryDto);
@@ -39,7 +46,10 @@ export class CategoriesController {
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Kategoriyani yangilash' })
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Kategoriyani yangilash (Faqat Admin)' })
   @ApiResponse({ status: 200, type: Category })
   update(
     @Param('id') id: string,
@@ -49,7 +59,10 @@ export class CategoriesController {
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Kategoriyani o\'chirish' })
+  @ApiBearerAuth('access-token')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Kategoriyani o\'chirish (Faqat Admin)' })
   @ApiResponse({ status: 200, description: 'Kategoriya o\'chirildi' })
   remove(@Param('id') id: string) {
     return this.categoriesService.remove(id);

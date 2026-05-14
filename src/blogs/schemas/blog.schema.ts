@@ -16,9 +16,21 @@ export class Blog extends Document {
   @Prop()
   image: string;
 
-  @ApiProperty({ type: String, description: 'Muallif (Admin) IDsi' })
+  @ApiProperty({ example: 'Muallif (Admin) IDsi' })
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   author: Types.ObjectId;
+
+  @ApiProperty({ example: 'Wedding Bouquet', description: 'Blog kategoriyasi' })
+  @Prop()
+  category: string;
+
+  @ApiProperty({ example: 'Lorem ipsum dolor sit amet...', description: 'Blog qisqa matni' })
+  @Prop()
+  excerpt: string;
+
+  @ApiProperty({ example: '12 min Read', description: 'O\'qish vaqti' })
+  @Prop()
+  readingTime: string;
 
   @ApiProperty({ example: ['parvarish', 'gullar'], description: 'Teglar ro\'yxati' })
   @Prop([String])

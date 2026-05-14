@@ -58,9 +58,56 @@ export class Flower extends Document {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   seller: User;
 
+  @ApiProperty({ example: 'FLW-001', description: 'SKU (Stock Keeping Unit)', required: false })
+  @Prop()
+  sku: string;
+
+  @ApiProperty({ example: ['Bouquets', 'Flowers'], description: 'Teglar', required: false })
+  @Prop([String])
+  tags: string[];
+
+  @ApiProperty({ 
+    example: [
+      { name: 'Standard', price: 45000 },
+      { name: 'Deluxe', price: 65000 },
+      { name: 'Premium', price: 90000 }
+    ], 
+    description: 'O\'lchamlar va narxlar',
+    required: false 
+  })
+  @Prop({ type: [{ name: String, price: Number }] })
+  sizes: { name: string, price: number }[];
+
+  @ApiProperty({ example: 245, description: 'Sharhlar soni', required: false })
+  @Prop({ default: 0 })
+  reviewCount: number;
+
+  @ApiProperty({ 
+    example: [
+      { key: 'Flower Type', value: 'Mixed Flower' },
+      { key: 'Bouquet Size', value: 'Small, Medium, Large' }
+    ],
+    description: 'Qo\'shimcha ma\'lumotlar (Additional Information tab)',
+    required: false
+  })
+  @Prop({ type: [{ key: String, value: String }] })
+  additionalInfo: { key: string, value: string }[];
+
   @ApiProperty({ example: true, description: 'Sotuvda mavjudligi' })
   @Prop({ default: true })
   isActive: boolean;
+
+  @ApiProperty({ example: false, description: 'Asosiy sahifada ko\'rsatish' })
+  @Prop({ default: false })
+  isFeatured: boolean;
+
+  @ApiProperty({ example: true, description: 'Yangi kelgan mahsulot' })
+  @Prop({ default: true })
+  isNewArrival: boolean;
+
+  @ApiProperty({ example: false, description: 'Kun mahsuloti (Deal of the Day)' })
+  @Prop({ default: false })
+  isDealOfTheDay: boolean;
 }
 
 export const FlowerSchema = SchemaFactory.createForClass(Flower);

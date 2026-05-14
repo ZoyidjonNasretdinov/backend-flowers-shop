@@ -28,22 +28,44 @@ export class FlowersService {
       recipient,
       rating, 
       inStock,
-      limit = 10, 
+      isFeatured,
+      isNewArrival,
+      isDealOfTheDay,
+      sortBy,
+      limit = 12, 
       page = 1 
     } = query;
     
     const filters: any = { isActive: true };
+
+    if (isFeatured === 'true') {
+      filters.isFeatured = true;
+    }
+
+    if (isNewArrival === 'true') {
+      filters.isNewArrival = true;
+    }
+
+    if (isDealOfTheDay === 'true') {
+      filters.isDealOfTheDay = true;
+    }
 
     if (search) {
       filters.name = { $regex: search, $options: 'i' };
     }
 
     if (category) {
-      filters.category = category;
+      // Handles both single ID and array of IDs
+      if (Array.isArray(category)) {
+        filters.category = { $in: category };
+      } else {
+        filters.category = category;
+      }
     }
 
     if (occasion) {
-      filters.occasion = occasion;
+      const occasions = Array.isArray(occasion) ? occasion : [occasion];
+      filters.occasion = { $in: occasions };
     }
 
     if (color) {
@@ -72,6 +94,29 @@ export class FlowersService {
       if (maxPrice) filters.price.$lte = Number(maxPrice);
     }
 
+    // Sorting logic
+    let sortOptions: any = { createdAt: -1 };
+    if (sortBy) {
+      switch (sortBy) {
+        case 'price_low':
+          sortOptions = { price: 1 };
+          break;
+        case 'price_high':
+          sortOptions = { price: -1 };
+          break;
+        case 'rating':
+          sortOptions = { rating: -1 };
+          break;
+        case 'oldest':
+          sortOptions = { createdAt: 1 };
+          break;
+        case 'newest':
+        default:
+          sortOptions = { createdAt: -1 };
+          break;
+      }
+    }
+
     const skip = (page - 1) * limit;
     
     const [data, total] = await Promise.all([
@@ -79,9 +124,9 @@ export class FlowersService {
         .find(filters)
         .populate('category', 'name')
         .populate('seller', 'fullName email')
-        .limit(limit)
+        .limit(Number(limit))
         .skip(skip)
-        .sort({ createdAt: -1 })
+        .sort(sortOptions)
         .exec(),
       this.flowerModel.countDocuments(filters),
     ]);
@@ -97,16 +142,31 @@ export class FlowersService {
     };
   }
 
-  async findOne(id: string): Promise<Flower> {
+  async findOne(id: string): Promise<any> {
     const flower = await this.flowerModel
       .findById(id)
       .populate('category', 'name')
       .populate('seller', 'fullName email')
       .exec();
+    
     if (!flower) {
       throw new NotFoundException('Gul topilmadi');
     }
-    return flower;
+
+    const relatedProducts = await this.flowerModel
+      .find({ 
+        category: flower.category, 
+        _id: { $ne: id },
+        isActive: true 
+      })
+      .limit(4)
+      .populate('category', 'name')
+      .exec();
+
+    return {
+      product: flower,
+      relatedProducts,
+    };
   }
 
   async findBySeller(sellerId: string): Promise<Flower[]> {
@@ -143,5 +203,46 @@ export class FlowersService {
       throw new NotFoundException('Gul topilmadi yoki sizda ruxsat yo\'q');
     }
     return { message: 'Gul o\'chirildi' };
+  }
+
+  async getLandingPage(): Promise<any> {
+    const [featured, newArrivals, dealOfTheDay, random] = await Promise.all([
+      this.flowerModel
+        .find({ isFeatured: true, isActive: true })
+        .limit(4)
+        .populate('category', 'name')
+        .exec(),
+      this.flowerModel
+        .find({ isNewArrival: true, isActive: true })
+        .sort({ createdAt: -1 })
+        .limit(4)
+        .populate('category', 'name')
+        .exec(),
+      this.flowerModel
+        .find({ isDealOfTheDay: true, isActive: true })
+        .limit(1)
+        .populate('category', 'name')
+        .exec(),
+      this.flowerModel.aggregate([
+        { $match: { isActive: true } },
+        { $sample: { size: 8 } },
+        {
+          $lookup: {
+            from: 'categories',
+            localField: 'category',
+            foreignField: '_id',
+            as: 'category',
+          },
+        },
+        { $unwind: { path: '$category', preserveNullAndEmptyArrays: true } },
+      ]),
+    ]);
+
+    return {
+      featured,
+      newArrivals,
+      dealOfTheDay: dealOfTheDay[0] || null,
+      random,
+    };
   }
 }

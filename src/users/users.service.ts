@@ -1,12 +1,30 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, OnModuleInit } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { User } from './schemas/user.schema';
+import { User, Role } from './schemas/user.schema';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
-export class UsersService {
+export class UsersService implements OnModuleInit {
   constructor(@InjectModel(User.name) private userModel: Model<User>) {}
+
+  async onModuleInit() {
+    const adminExists = await this.userModel.findOne({ role: Role.ADMIN });
+    if (!adminExists) {
+      const salt = await bcrypt.genSalt(10);
+      const passwordHash = await bcrypt.hash('admin123', salt);
+      
+      const newAdmin = new this.userModel({
+        fullName: 'Admin User',
+        email: 'admin@gmail.com',
+        passwordHash,
+        role: Role.ADMIN,
+      });
+      
+      await newAdmin.save();
+      console.log('✅ Default Admin created: admin@gmail.com / admin123');
+    }
+  }
 
   async findOne(id: string): Promise<User> {
     const user = await this.userModel.findById(id).select('-passwordHash').exec();

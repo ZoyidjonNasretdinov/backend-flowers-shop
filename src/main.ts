@@ -17,7 +17,7 @@ async function bootstrap() {
       if (!origin || allowedOrigins.some((regex) => regex.test(origin))) {
         callback(null, true);
       } else {
-        callback(null, true); // Test uchun barchasiga ruxsat beramiz
+        callback(new Error('Not allowed by CORS'));
       }
     },
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
@@ -71,6 +71,9 @@ Gullar va sovg'alar marketplace API.
 | 🌻 **Flowers** | Gullar ro'yxati |
 | 🛡️ **Admin** | Foydalanuvchilarni boshqarish |
 | 📊 **Dashboard** | Statistika va Kabinet |
+| 💖 **Wishlist** | Tanlangan mahsulotlar |
+| 👗 **Try-On** | AI Virtual kiyib ko'rish |
+| 🎨 **Generator** | AI Guldasta yaratish |
       `,
     )
     .setVersion('1.0')
